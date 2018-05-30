@@ -3,7 +3,7 @@
 When you minify your javascript code with the Angular CLI it is hard to debug exceptions that arise in a production environment within Rollbar.
 Luckily for us, Rollbar allows us to upload our javascript source maps so that we can see the original source filename, line number, method name, and code snippet the exception occurred from.
 
-Unfortunately for us, Rollbar does not have a streamlined process for uploading these source maps within an Angular 6 deployment pipeline. There is a webpack solution but this would require you to use `ng eject` to gain access to the webpack configuration file which shouldn't be necessary.
+Unfortunately for us, Rollbar does not have a streamlined process for uploading these source maps within an Angular 6 deployment pipeline. There is a [webpack solution](https://github.com/thredup/rollbar-sourcemap-webpack-plugin) but this would require you to use `ng eject` to gain access to the webpack configuration file which shouldn't be necessary.
 
 I built a script that can loop through the map files within your /dist folder and upload them to rollbar when you build your angular application. After the map files have been uploaded to Rollbar via their API, it wipes them out from the /dist folder so that you can deploy the entire /dist folder to production. (Although a user can deobfuscate your code without source maps, I recommend you always cover all of your bases)
 
