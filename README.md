@@ -1,27 +1,29 @@
-# AngularRollbarSourceMaps
+# Angular 6 Rollbar Source Maps
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.1.
+When you minify your javascript code with the Angular CLI it is hard to debug exceptions that arise in a production environment within Rollbar.
+Luckily for us, Rollbar allows us to upload our javascript source maps so that we can see the original source filename, line number, method name, and code snippet the exception occurred from.
 
-## Development server
+Unfortunately for us, Rollbar does not have a streamlined process for uploading these source maps within an Angular 6 deployment pipeline. There is a webpack solution but this would require you to use `ng eject` to gain access to the webpack configuration file which shouldn't be necessary.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+I built a script that can loop through the map files within your /dist folder and upload them to rollbar when you build your angular application. After the map files have been uploaded to Rollbar via their API, it wipes them out from the /dist folder so that you can deploy the entire /dist folder to production. (Although a user can deobfuscate your code without source maps, I recommend you always cover all of your bases)
 
-## Code scaffolding
+## .env
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Be sure to update the `.env` file with your Rollbar Access Token as well as your websites main URL. Rollbar uses this URL to grab your minified javascript code to compare it with the source map we upload, so be sure that it's accurate.
 
-## Build
+## npm run build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+As you will see the package.json file the `build` command looks like so:
+```
+ts-node git.version.ts && ng build --prod --source-map && node scripts/sourceMap.js
+```
 
-## Running unit tests
+### Breakdown:
+1. `ts-node git.version.ts` This command takes the latest git commit SHA and creates a file named `versions.ts` within the environments folder. Rollbar requires you to attach a version number to each source map you upload so this implementation will work as you make changes down the line and run deploys. You'll notice we use this file within `src/app/factories/rollbar.factory.ts` where we define the rest of our settings we send to Rollbar.
+2. `ng build --prod --source-map` This command is pretty straightforward. It runs the classic ng build command and passes the production flag as well as a flag that tells the CLI to generate source maps.
+3. `node scripts/sourceMap.js` This is the script I have written which loops through all of the `.map` javascript files within the /dist folder and uploads them one by one to Rollbar via their API. After it's done uploading them to Rollbar it deletes them so that you don't deploy them to production.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-## Running end-to-end tests
+## Disclaimer
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+There are probably better ways to do this but at the time of me posting this, I was unable to find ANY resources out there to copy from. This repo was created in the hopes that it would help someone save a bit of time and provide a reference for one way to do this within an Angular 6 app.

@@ -6,11 +6,11 @@ const exec = require('child_process').exec;
 const revision = new Observable<string>(s => {
   exec('git rev-parse --short HEAD',
     function (error: Error, stdout: Buffer, stderr: Buffer) {
-        if (error !== null) {
-          console.log('git error: ' + error + stderr);
-        }
-        s.next(stdout.toString().trim());
-        s.complete();
+      if (error !== null) {
+        console.log('git error: ' + error + stderr);
+      }
+      s.next(stdout.toString().trim());
+      s.complete();
     });
 });
 
